@@ -1,0 +1,369 @@
+---
+title: "Exploring US Census data in R with tidycensus"
+subtitle: "ISDS R Users Group Webinar"
+date: "February 19, 2018"
+author: "Kyle Walker, TCU"
+output: 
+  xaringan::moon_reader: 
+    seal: yes
+  
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+library(tidycensus)
+library(tidyverse)
+options(tigris_use_cache = TRUE)
+```
+
+## Follow along!  
+
+* Slides: URL
+
+* Code: Gist
+
+---
+
+## About me
+
+* Work: professor at TCU/spatial data science consultant
+
+* Research: urban geography, spatial demography, open data science
+
+* Software: tidycensus, tigris, idbr
+
+* Forthcoming book: _Analyzing the US Census with R_
+
+---
+
+## Disclaimer
+
+This webinar uses Census Bureau data but is not endorsed or certified by the Census Bureau.  
+
+---
+
+## What we'll cover
+
+* Census data: the basics
+
+* Acquiring data with tidycensus
+
+* Margins of error in tidycensus
+
+* Mapping with tidycensus and ggplot2
+
+---
+
+## Census data: tables and features
+
+Work with US Census data commonly includes two components: 
+
+* __Data tables__ obtained from the decennial Census, American Community Survey, or other sources
+
+* __Geographic features__ obtained from the Census's TIGER/Line database
+
+---
+
+## Census tables: American FactFinder
+
+<img src=img/factfinder.PNG style="width: 700px">
+
+---
+
+## Census geography: TIGER/Line shapefiles
+
+<img src=img/dropdown.PNG style="width: 400px">
+
+---
+
+## tidycensus: get Census data in R
+
+* R package first released in mid-2017
+
+* Allows R users to obtain decennial Census and ACS data pre-formatted for use with tidyverse tools (dplyr, ggplot2, etc.)
+
+* Optionally returns geographic data as simple feature geometry for common Census geographies
+
+---
+
+## What tidycensus can do
+
+```{r, fig.width=5}
+tx <- get_acs(geography = "county", state = "TX", 
+              variables = "B19013_001", geometry = TRUE)
+
+ggplot(tx, aes(fill = estimate)) + geom_sf()
+```
+
+---
+
+## tidycensus: the basics
+
+* The `get_decennial()` and `get_acs()` functions give access to the decennial Census and American Community Survey, respectively
+
+* Required arguments: `geography` and `variables`
+
+* Default `year`: 2010 (decennial Census) and 2012-2016 (ACS)
+
+---
+
+## How tidycensus works
+
+* tidycensus formats your arguments to make a request to the appropriate Census or ACS Application Programming Interface (API)
+
+* A __tibble__ (or sf tibble) is returned in tidy (long) format by default containing the requested data
+
+---
+
+## Census geography
+
+<img src=img/hierarchy.PNG style="width: 550px">
+
+---
+
+## Census variables
+
+* __Variables__ in tidycensus are identified by their Census ID, e.g. `B19013_001`
+
+* Entire __tables__ of variables can be requested with the `table` argument, e.g. `table = "B19001"`
+
+* Users can request multiple variables at a time, and set custom names with a named vector
+
+---
+
+## Searching for Census variables
+
+* Variable definitions for a given dataset can be loaded into R with the `load_variables()` function, and explored in RStudio with `View()`
+
+```{r, eval = FALSE}
+v16 <- load_variables(2016, "acs5", cache = TRUE)
+View(v16)
+```
+
+---
+
+## "Tidy" Census data
+
+```{r}
+income <- get_acs(geography = "state", table = "B19001")
+income
+```
+
+---
+
+## "Wide" Census data
+
+```{r}
+inc_wide <- get_acs(geography = "state", table = "B19001", 
+                    output = "wide")
+inc_wide
+```
+
+---
+
+class: middle, center, inverse
+
+## Margins of error in tidycensus
+
+---
+
+## Margins of error in the ACS
+
+* American Community Survey: _sample_ of approximately 3 million American households per year
+
+* Geographies of population > 65,000 available in the 1-year ACS; all geographies (starting with block groups) available in the 5-year ACS
+
+* ACS __estimates__ associated with __margins of error__; default confidence level of 90 percent
+
+---
+
+## Margins of error in `get_acs()`
+
+
+```{r}
+az <- get_acs(geography = "county", variables = "B19013_001", 
+              state = "AZ")
+
+head(az)
+```
+
+---
+
+## Visualizing margins of error
+
+```{r, eval = FALSE}
+az %>%
+  mutate(NAME = str_replace(NAME, " County, Arizona", "")) %>%
+  ggplot(aes(x = estimate, y = reorder(NAME, estimate))) + 
+  geom_errorbarh(aes(xmin = estimate - moe, xmax = estimate + moe)) +
+  geom_point(color = "red", size = 3) +
+  scale_x_continuous(labels = scales::dollar) + 
+  labs(title = "Household income by county in Arizona",
+       subtitle = "2012-2016 American Community Survey",
+       y = "",
+       x = "ACS estimate (bars represent margin of error)")
+```
+
+
+---
+
+## Visualizing margins of error
+
+<img src=img/az.png style="width: 800px">
+
+---
+
+## Derived margins of error in tidycensus
+
+* Margins of error for derived estimates available with the `moe_sum()`, `moe_prop()`, `moe_ratio()`, and `moe_product()` functions
+
+* When possible, attempt to locate pre-computed derived estimates in the ACS before computing yourself (e.g. in Data Profile or Subject Tables)
+
+---
+class: middle, center, inverse
+
+## Mapping data obtained with tidycensus
+
+---
+
+## Census "geometry" in R
+
+* __tigris__ package: enables users to obtain and load Census geography as R objects
+
+* __sf__ package: next-generation model for representing vector spatial data in R as _simple features_
+
+Example: 
+
+```{r}
+library(tigris)
+mi <- counties("MI", cb = TRUE, class = "sf")
+```
+
+
+---
+
+## Census "geometry" in R
+
+```{r}
+plot(mi$geometry)
+```
+
+---
+
+## Geometry in tidycensus
+
+* For common geographies (`"state"`, `"county"`, `"tract"`, `"block group"`, `"block"`, and `"zcta"`) tidycensus can load simple feature geometry with the argument `geometry = TRUE`. 
+
+Example: 
+
+```{r}
+cook <- get_acs(geography = "tract", state = "IL", county = "Cook", 
+                variables = c(hhincome = "B19013_001"), geometry = TRUE)
+```
+
+---
+
+## Geometry in tidycensus
+
+```{r}
+head(cook)
+```
+
+
+---
+
+## Mapping Census data: __ggplot2__
+
+* The `geom_sf()` function in ggplot2 (development version) allows for the mapping of simple features objects
+
+Example: 
+
+```{r, eval = FALSE}
+library(viridis)
+ggplot(cook, aes(fill = estimate, color = estimate)) + 
+  geom_sf() + 
+  theme_minimal() + 
+  coord_sf(crs = 26916, datum = NA) + 
+  scale_color_viridis(option = "cividis", guide = FALSE) + 
+  scale_fill_viridis(option = "cividis", 
+                     labels = scales::dollar) + 
+  labs(title = "Median household income, 2012-2016 ACS", 
+       subtitle = "Census tracts in Cook County, Illinois", 
+       fill = "")
+```
+
+---
+
+## Mapping Census data: __ggplot2__
+
+<img src=img/cook.png style="width: 800px">
+
+---
+
+## Mapping Census data: __mapview__
+
+```{r}
+library(mapview)
+mapview(cook, zcol = "estimate", legend = TRUE)
+```
+
+---
+
+## Interactive exploration: __leaflet__
+
+<iframe src="https://walkerke.github.io/urbanslides/chicago/img/il_income.html" height = "450" width = "800" frameborder="0" scrolling="no"></iframe>
+
+.footnote[[Click here for source code](https://gist.github.com/walkerke/2d534dc0dd638ccdbaeef1ca83f4fe86)]
+---
+
+## Interactive exploration: __plotly__
+
+<iframe src="brushing.html" height = "500" width = "1000" frameborder="0" scrolling="no"></iframe>
+
+.footnote[[Click here for source code](https://gist.github.com/walkerke/93bfe80bb7735aa6265a61013eaed3fa)]
+
+---
+
+## Thank you!
+
+For more: 
+
+* Hire me as a consultant: kwalkerdata@gmail.com
+
+* Take my DataCamp course on US Census data in R - coming this spring
+
+* Join my mailing list: http://eepurl.com/cPGKZD 
+
+* Follow me on Twitter: @kyle_e_walker
+
+
+
+
+
+
+
+
+
+<style>
+
+h1, h2, h3 {
+  color: #386890; 
+}
+
+a {
+  color: #90b4d2; 
+}
+
+.inverse {
+  background-color: #386890; 
+
+}
+</style>
+
+
+
+
+
+
+
