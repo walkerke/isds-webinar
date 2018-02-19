@@ -26,7 +26,7 @@ map <- ggplot(tx_shared, aes(label = NAME)) +
   coord_sf(crs = 3083) # http://spatialreference.org/ref/epsg/nad83-texas-centric-albers-equal-area/
 
 scatterly <- ggplotly(scatter, tooltip = "NAME") %>%
-  layout(dragmode = "lasso", margin = list(l = 110)) %>%
+  layout(dragmode = "lasso") %>%
   highlight("plotly_selected", color = "red")
 
 maply <- ggplotly(map, tooltip = "NAME") %>%

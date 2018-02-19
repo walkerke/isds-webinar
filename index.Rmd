@@ -19,9 +19,11 @@ options(tigris_use_cache = TRUE)
 
 ## Follow along!  
 
-* Slides: URL
+Materials for the webinar are found at https://github.com/walkerke/isds-webinar, and include: 
 
-* Code: Gist
+* A link to the webinar slides (https://walkerke.github.io/isds-webinar)
+
+* [The R Markdown source code (which you can run in RStudio)](https://raw.githubusercontent.com/walkerke/isds-webinar/master/index.Rmd): 
 
 ---
 
@@ -29,7 +31,8 @@ options(tigris_use_cache = TRUE)
 
 * Work: professor at TCU/spatial data science consultant
 
-* Research: urban geography, spatial demography, open data science
+* Research: urban 
+geography, spatial demography, open data science
 
 * Software: tidycensus, tigris, idbr
 
@@ -89,7 +92,7 @@ Work with US Census data commonly includes two components:
 
 ## What tidycensus can do
 
-```{r, fig.width=5}
+```{r, fig.width=4.5}
 tx <- get_acs(geography = "county", state = "TX", 
               variables = "B19013_001", geometry = TRUE)
 
@@ -112,7 +115,15 @@ ggplot(tx, aes(fill = estimate)) + geom_sf()
 
 * tidycensus formats your arguments to make a request to the appropriate Census or ACS Application Programming Interface (API)
 
+* A Census api is required: obtain one from https://api.census.gov/data/key_signup.html and set with: 
+
+```{r, eval = FALSE}
+census_api_key("YOUR KEY", install = TRUE)
+```
+
 * A __tibble__ (or sf tibble) is returned in tidy (long) format by default containing the requested data
+
+
 
 ---
 
@@ -154,7 +165,7 @@ income
 
 ## "Wide" Census data
 
-```{r}
+```{r, }
 inc_wide <- get_acs(geography = "state", table = "B19001", 
                     output = "wide")
 inc_wide
@@ -196,7 +207,8 @@ head(az)
 az %>%
   mutate(NAME = str_replace(NAME, " County, Arizona", "")) %>%
   ggplot(aes(x = estimate, y = reorder(NAME, estimate))) + 
-  geom_errorbarh(aes(xmin = estimate - moe, xmax = estimate + moe)) +
+  geom_errorbarh(aes(xmin = estimate - moe, 
+                     xmax = estimate + moe)) +
   geom_point(color = "red", size = 3) +
   scale_x_continuous(labels = scales::dollar) + 
   labs(title = "Household income by county in Arizona",
@@ -258,8 +270,10 @@ plot(mi$geometry)
 Example: 
 
 ```{r}
-cook <- get_acs(geography = "tract", state = "IL", county = "Cook", 
-                variables = c(hhincome = "B19013_001"), geometry = TRUE)
+cook <- get_acs(geography = "tract", state = "IL", 
+                county = "Cook", 
+                variables = c(hhincome = "B19013_001"), 
+                geometry = TRUE)
 ```
 
 ---
@@ -297,13 +311,13 @@ ggplot(cook, aes(fill = estimate, color = estimate)) +
 
 ## Mapping Census data: __ggplot2__
 
-<img src=img/cook.png style="width: 800px">
+<img src=img/cook.png style="width: 700px">
 
 ---
 
 ## Mapping Census data: __mapview__
 
-```{r}
+```{r, fig.height=4}
 library(mapview)
 mapview(cook, zcol = "estimate", legend = TRUE)
 ```
@@ -319,7 +333,7 @@ mapview(cook, zcol = "estimate", legend = TRUE)
 
 ## Interactive exploration: __plotly__
 
-<iframe src="brushing.html" height = "500" width = "1000" frameborder="0" scrolling="no"></iframe>
+<iframe src="brushing.html" height = "500" width = "100%" frameborder="0" scrolling="no"></iframe>
 
 .footnote[[Click here for source code](https://gist.github.com/walkerke/93bfe80bb7735aa6265a61013eaed3fa)]
 
@@ -358,6 +372,10 @@ a {
 .inverse {
   background-color: #386890; 
 
+}
+
+.remark-code-line {
+  font-size: 90%; 
 }
 </style>
 
