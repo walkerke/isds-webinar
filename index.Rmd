@@ -93,6 +93,7 @@ Work with US Census data commonly includes two components:
 ## What tidycensus can do
 
 ```{r, fig.width=4.5}
+library(tidycensus)
 tx <- get_acs(geography = "county", state = "TX", 
               variables = "B19013_001", geometry = TRUE)
 
