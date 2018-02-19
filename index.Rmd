@@ -23,7 +23,7 @@ Materials for the webinar are found at https://github.com/walkerke/isds-webinar,
 
 * A link to the webinar slides (https://walkerke.github.io/isds-webinar)
 
-* [The R Markdown source code (which you can run in RStudio)](https://raw.githubusercontent.com/walkerke/isds-webinar/master/index.Rmd): 
+* [The R Markdown source code (which you can run in RStudio)](https://raw.githubusercontent.com/walkerke/isds-webinar/master/index.Rmd)
 
 ---
 
@@ -265,7 +265,7 @@ plot(mi$geometry)
 
 ## Geometry in tidycensus
 
-* For common geographies (`"state"`, `"county"`, `"tract"`, `"block group"`, `"block"`, and `"zcta"`) tidycensus can load simple feature geometry with the argument `geometry = TRUE`. 
+* For common geographies (`"state"`, `"county"`, `"tract"`, `"block group"`, `"block"`, and `"zcta"`) tidycensus can load simple feature geometry with the argument `geometry = TRUE`
 
 Example: 
 
@@ -343,13 +343,13 @@ mapview(cook, zcol = "estimate", legend = TRUE)
 
 For more: 
 
-* Hire me as a consultant: kwalkerdata@gmail.com
+* Hire me as a consultant: <kwalkerdata@gmail.com>
 
-* Take my DataCamp course on US Census data in R - coming this spring
+* Take my [DataCamp](https://www.datacamp.com/) course on US Census data in R - coming this spring
 
 * Join my mailing list: http://eepurl.com/cPGKZD 
 
-* Follow me on Twitter: @kyle_e_walker
+* Follow me on Twitter: [@kyle_e_walker](https://twitter.com/kyle_e_walker)
 
 
 
